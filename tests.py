@@ -10,10 +10,10 @@ with casc.Casc("D:\\Warcraft III:w3") as cf:
             break
         if result['filename'].endswith(".slk"):
             print(result)
-    status, file_ = cf.open_file("war3.w3mod:units\\unitdata.slk")
-    if status:
-        file_, content, actual_read = cf.read_file(file_)
-        cf.close_file(file_)
-        print(content)
-    else:
-        print("Something Wrong", file_)
+    # status, file_ = cf.open_file("war3.w3mod:units\\unitdata.slk")
+    # if status:
+    #     file_, content, actual_read = cf.read_file(file_)
+    #     cf.close_file(file_)
+    #     print(content)
+    # else:
+    #     print("Something Wrong", file_)
