@@ -1,4 +1,8 @@
 import casc
+from distutils.core import run_setup
+
+
+dist = run_setup('setup.py', stop_after='commandline')
 
 with casc.Casc("D:\\Warcraft III:w3") as cf:
     handler, result = cf.find_first_file("*")

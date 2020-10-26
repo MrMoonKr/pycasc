@@ -1,5 +1,7 @@
 #define PY_SSIZE_T_CLEAN
-// #define Py_LIMITED_API 0x03030000
+#ifdef NDEBUG
+  #define Py_LIMITED_API 0x03030000
+#endif
 #include <Python.h>
 #include <CascLib.h>
 
