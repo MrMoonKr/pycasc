@@ -5,9 +5,33 @@
 #include <Python.h>
 #include <CascLib.h>
 
+// Check windows
+#if _WIN32 || _WIN64
+#if _WIN64
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
+// Check GCC
+#if __GNUC__
+#if __x86_64__ || __ppc64__
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
+#ifdef ENVIRONMENT32
+#define PTRINT "k"
+#else
+#define PTRINT "K"
+#endif
+
 PyObject* casc_open(PyObject* self, PyObject* args) {
 	const char* path = "";
-	wchar_t widepath[MAX_PATH] = { 0 };
+	char widepath[MAX_PATH] = { 0 };
 	void* storage = NULL;
 
 	if (!PyArg_ParseTuple(args, "s", &path)) {
@@ -17,7 +41,7 @@ PyObject* casc_open(PyObject* self, PyObject* args) {
 
 	mbstowcs(widepath, path, strlen(path));
 
-	if(!CascOpenStorage(widepath, 0, &storage)) {
+	if(!CascOpenStorage(path, 0, &storage)) {
 		char err[0x100] = {0};
 		sprintf(err, "Problem opening archive: %d", GetCascError());
 		PyErr_SetString(PyExc_OSError, err);
@@ -25,13 +49,13 @@ PyObject* casc_open(PyObject* self, PyObject* args) {
 		return NULL;
 	}
 
-	return Py_BuildValue ("K", storage);
+	return Py_BuildValue (PTRINT, storage);
 }
 
 PyObject* casc_close(PyObject* self, PyObject* args) {
 	void* storage = NULL;
 
-	if (!PyArg_ParseTuple(args, "K", &storage)) {
+	if (!PyArg_ParseTuple(args, PTRINT, &storage)) {
 		PyErr_SetString(PyExc_TypeError, "Parameter must be a casc store object.");
 		return NULL;
 	}
@@ -49,24 +73,28 @@ PyObject* casc_find_first_file(PyObject* self, PyObject* args) {
 	void* storage = NULL;
 	CASC_FIND_DATA data = { 0 };
 	const char* path = "";
-	wchar_t widepath[MAX_PATH] = { 0 };
+	char widepath[MAX_PATH] = { 0 };
 	
-	if (!PyArg_ParseTuple(args, "Ks", &storage, &path)) {
+	if (!PyArg_ParseTuple(args, PTRINT "s", &storage, &path)) {
 		PyErr_SetString(PyExc_TypeError, "Wrong parameters.");
 		return NULL;
 	}
 	mbstowcs(widepath, path, strlen(path));
 
-	void* handle = CascFindFirstFile(storage, widepath, &data, L"");
+	void* handle = CascFindFirstFile(storage, path, &data, "");
 
-	return Py_BuildValue("(K,{s:s,s:i,s:i})", handle, "filename", data.szFileName, "file_size", data.FileSize, "exists_locally", data.bFileAvailable);
+	return Py_BuildValue("(" PTRINT ",{s:s,s:i,s:i})", 
+		handle, 
+		"filename", data.szFileName, 
+		"file_size", data.FileSize, 
+		"exists_locally", data.bFileAvailable);
 }
 
 PyObject* casc_find_next_file(PyObject* self, PyObject* args) {
 	void* handle = NULL;
 	CASC_FIND_DATA data = { 0 };
 
-	if (!PyArg_ParseTuple(args, "K", &handle)) {
+	if (!PyArg_ParseTuple(args, PTRINT, &handle)) {
 		PyErr_SetString(PyExc_TypeError, "Parameter must be a casc store object.");
 		return NULL;
 	}
@@ -74,7 +102,11 @@ PyObject* casc_find_next_file(PyObject* self, PyObject* args) {
 	bool result = CascFindNextFile(handle, &data);
 
 	if (result) {
-		return Py_BuildValue("(K,{s:s,s:i,s:i})", handle, "filename", data.szFileName, "file_size", data.FileSize, "exists_locally", data.bFileAvailable);
+		return Py_BuildValue("(" PTRINT ",{s:s,s:i,s:i})", handle, 
+			"filename", data.szFileName, 
+			"file_size", data.FileSize, 
+			"exists_locally", data.bFileAvailable
+			);
 	} else {
 		CascFindClose(handle);
 		Py_INCREF(Py_None);
@@ -85,7 +117,7 @@ PyObject* casc_find_next_file(PyObject* self, PyObject* args) {
 PyObject* casc_find_close(PyObject* self, PyObject* args) {
 	void* handle = NULL;
 
-	if (!PyArg_ParseTuple(args, "K", &handle)) {
+	if (!PyArg_ParseTuple(args, PTRINT, &handle)) {
 		PyErr_SetString(PyExc_TypeError, "Parameter must be a casc store object.");
 		return NULL;
 	}
@@ -107,17 +139,19 @@ PyObject* casc_open_file(PyObject* self, PyObject* args) {
 	if (!PyArg_ParseTuple(args, "Ks", &storage, &path)) {
 		PyErr_SetString(PyExc_TypeError, "Wrong parameters.");
 		return NULL;
-	}
+	}	
 
 	mbstowcs(widepath, path, strlen(path));
 
 	if(CascOpenFile(storage, path, 0, CASC_OPEN_BY_NAME, &file_ptr)) {
-		Py_INCREF(Py_True);
-		return Py_BuildValue("(OK)", Py_True, file_ptr);
+		PyObject* rv = Py_BuildValue("(OK)", Py_True, file_ptr);
+		return rv;
+
+		// Py_RETURN_TRUE;
 	} else {
 		CascCloseFile(file_ptr);
 		Py_INCREF(Py_False);
-		return Py_BuildValue("(OK)", Py_False, GetCascError());
+		return Py_BuildValue("(O" PTRINT ")", Py_False, GetCascError());
 	}
 }
 
@@ -126,31 +160,40 @@ PyObject* casc_read_file(PyObject* self, PyObject* args) {
 	Py_ssize_t size = 0;
 	Py_ssize_t actually_read = 0;
 
-	if (!PyArg_ParseTuple(args, "K", &handle)) {
+	if (!PyArg_ParseTuple(args, PTRINT, &handle)) {
 		PyErr_SetString(PyExc_TypeError, "Parameter must be a file reference.");
 		return NULL;
 	}
+#ifdef ENVIRONMENT32
+	if((size = CascGetFileSize(handle, NULL)) == CASC_INVALID_SIZE) {	
+#else
 	if(CascGetFileSize64(handle, &size) == CASC_INVALID_SIZE) {
+#endif
+		
 		CascCloseFile(handle);
 		PyErr_SetString(PyExc_ValueError, "Couldn't get the size of the file.");
 		return NULL;
 	}
-	char* buffer = malloc(size);
+	char* buffer = PyMem_Malloc(size);
+	if (buffer == NULL) {
+    	return PyErr_NoMemory();
+	}
+
 	PyObject* rv = NULL;
 	if(CascReadFile(handle, buffer, size, &actually_read)) {
-		rv = Py_BuildValue("Ky#K", handle, buffer, size, actually_read);
+		rv = Py_BuildValue("("PTRINT"y#n)", handle, buffer, size, actually_read);
 	} else {
 		Py_INCREF(Py_None);
-		rv = Py_BuildValue("KOK", handle, Py_None, 0);
+		rv = Py_BuildValue(PTRINT "O" PTRINT, handle, Py_None, 0);
 	}
-	free(buffer);
+	PyMem_Free(buffer);
 	return rv;
 }
 
 PyObject* casc_close_file(PyObject* self, PyObject* args) {
 	void* handle = NULL;
 
-	if (!PyArg_ParseTuple(args, "K", &handle)) {
+	if (!PyArg_ParseTuple(args, PTRINT, &handle)) {
 		PyErr_SetString(PyExc_TypeError, "Parameter must be a file reference.");
 		return NULL;
 	}

@@ -25,10 +25,13 @@ class Casc:
         return _casc.find_close(handler)
 
     def open_file(self, name):
-        return _casc.open_file(self.inst, name)
+        file_ =  _casc.open_file(self.inst, name)
+        return file_
 
     def read_file(self, file_):
-        return _casc.read_file(file_)
+        red_ = _casc.read_file(file_)
+        return red_
 
     def close_file(self, file_):
-        return _casc.close_file(file_)
+        _casc.close_file(file_)
+        # return rv
