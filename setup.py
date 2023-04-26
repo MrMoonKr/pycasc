@@ -16,7 +16,8 @@ from distutils.ccompiler import new_compiler
 
 extensions = []
 print("setup.py mode", sys.argv[1] if len(sys.argv) > 1 else "none")
-print("platform", sys.platform)
+print("platform", sys.platform, platform.architecture())
+print("cmdline", sys.argv)
 
 if not sys.argv[1] == 'install':
     if not (pathlib.Path('.') / 'CascLib').is_dir():
