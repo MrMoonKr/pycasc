@@ -19,7 +19,7 @@ print("setup.py mode", sys.argv[1] if len(sys.argv) > 1 else "none")
 print("platform", sys.platform)
 
 if not sys.argv[1] == 'install':
-    if not ('.' / 'CascLib').is_dir():
+    if not (pathlib.Path('.') / 'CascLib').is_dir():
         print("didn't find CascLib, cloning from repo...")
         subprocess.run(["git", "clone", "https://github.com/ladislav-zezula/CascLib.git"])
 
