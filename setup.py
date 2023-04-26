@@ -94,5 +94,7 @@ setup(
     py_modules=['casc'],
     ext_modules=extensions,
     verbose=mode == 'Debug',
-    description="Python library that binds to CascLib used by Blizzards games"
+    description="Python library that binds to CascLib used by Blizzards games",
+    long_description=''.join([l for l in open('README.md')]),
+    long_description_content_type='text/markdown',
 )
