@@ -8,6 +8,9 @@
 
 name: Upload Python Package
 
+env:
+  DISTUTILS_DEBUG: 1
+
 on: push
 
 permissions:
