@@ -30,7 +30,7 @@ if not sys.argv[1] == 'install':
         32: pathlib.Path('.') / 'CascLib' / bname32,
         64: pathlib.Path('.') / 'CascLib' / bname64}.get(plat)
     cmake_opts = {32: ["-A", "Win32"], 64: ["-A", "x64"]}.get(plat, [])
-    setup_build_plat = {32: 'win32', 64: 'win_amd64'}.get(plat, get_platform())
+    setup_build_plat = {32: 'win32', 64: 'win-amd64'}.get(plat, get_platform())
     bname = {32: bname32, 64: bname64}.get(plat, bname64)
 
     include_dir = pathlib.Path('.') / 'CascLib' / 'src'
