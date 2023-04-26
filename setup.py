@@ -26,13 +26,13 @@ if not sys.argv[1] == 'install':
     bname32 = 'build86'
     bname64 = 'build64'
     buil_dir = {
-        32: '.' / 'CascLib' / bname32,
-        64: '.' / 'CascLib' / bname64}.get(plat)
+        32: pathlib.Path('.') / 'CascLib' / bname32,
+        64: pathlib.Path('.') / 'CascLib' / bname64}.get(plat)
     cmake_opts = {32: ["-A", "Win32"], 64: ["-A", "x64"]}.get(plat, [])
     setup_build_plat = {32: 'win32', 64: 'win_amd64'}.get(plat, get_platform())
     bname = {32: bname32, 64: bname64}.get(plat, bname64)
 
-    include_dir = '.' / 'CascLib' / 'src'
+    include_dir = pathlib.Path('.') / 'CascLib' / 'src'
     
     print("build dir", str(buil_dir))
 
@@ -45,7 +45,7 @@ if not sys.argv[1] == 'install':
         'debug': True if mode == 'Debug' else False
     }
 
-    with ('.' / 'setup.cfg').open('w') as cfg_file:
+    with (pathlib.Path('.') / 'setup.cfg').open('w') as cfg_file:
         setup_cfg.write(cfg_file)  # needed?
 
     if not buil_dir.is_dir():
