@@ -91,4 +91,5 @@ setup(
     py_modules=['casc'],
     ext_modules=extensions,
     verbose=mode == 'Debug',
+    description="Python library that binds to CascLib used by Blizzards games"
 )
