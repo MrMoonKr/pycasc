@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  build:
 
     runs-on: windows-latest
 
@@ -33,6 +33,30 @@ jobs:
         pip install build
     - name: Build package
       run: python -m build --wheel
+    - name: Store the binary wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-package-distributions
+        path: dist
+
+
+  deploy:
+    name: Publish 🐍📦 to (Test)PyPI
+    needs:
+    - build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v2
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish 🐍📦 to TestPyPI
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
