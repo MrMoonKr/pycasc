@@ -6,7 +6,7 @@ import shutil
 import configparser
 import platform
 
-mode = 'Release'  # Debug/Release
+mode = 'Debug'  # Debug/Release
 plat = 32 if platform.architecture()[0] == '32bit' else 64  # 32 or 64
 os.environ['DISTUTILS_DEBUG'] = "1" if mode == 'Debug' else ""
 
@@ -58,7 +58,6 @@ if not sys.argv[1] == 'install':
         ] + cmake_opts + [
             ".."
         ], cwd=buil_dir)
-        buil_dir.mkdir(exist_ok=True)
     else:
         print("Found build dir, skipping")
 
