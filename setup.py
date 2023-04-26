@@ -6,7 +6,7 @@ import shutil
 import configparser
 import platform
 
-mode = 'Debug'  # Debug/Release
+mode = 'Release'  # Debug/Release
 plat = 32 if platform.architecture()[0] == '32bit' else 64  # 32 or 64
 os.environ['DISTUTILS_DEBUG'] = "1" if mode == 'Debug' else ""
 
