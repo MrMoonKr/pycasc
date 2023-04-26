@@ -19,31 +19,34 @@ print("setup.py mode", sys.argv[1] if len(sys.argv) > 1 else "none")
 print("platform", sys.platform)
 
 if not sys.argv[1] == 'install':
-    if not (pathlib.Path(__file__) / '..' / 'CascLib').is_dir():
+    if not ('.' / 'CascLib').is_dir():
         print("didn't find CascLib, cloning from repo...")
-        subprocess.run(["git", "clone", "https://github.com/ladislav-zezula/CascLib.git"], shell=True)
+        subprocess.run(["git", "clone", "https://github.com/ladislav-zezula/CascLib.git"])
 
     bname32 = 'build86'
     bname64 = 'build64'
     buil_dir = {
-        32: pathlib.Path(__file__) / '..' / 'CascLib' / bname32,
-        64: pathlib.Path(__file__) / '..' / 'CascLib' / bname64}.get(plat)
+        32: '.' / 'CascLib' / bname32,
+        64: '.' / 'CascLib' / bname64}.get(plat)
     cmake_opts = {32: ["-A", "Win32"], 64: ["-A", "x64"]}.get(plat, [])
-    setup_build_plat = {32: 'win32', 64: 'win-amd64'}.get(plat, get_platform())
+    setup_build_plat = {32: 'win32', 64: 'win_amd64'}.get(plat, get_platform())
     bname = {32: bname32, 64: bname64}.get(plat, bname64)
 
-    include_dir = pathlib.Path(__file__) / '..' / 'CascLib' / 'src'
+    include_dir = '.' / 'CascLib' / 'src'
+    
     print("build dir", str(buil_dir))
 
     shutil.rmtree(buil_dir, ignore_errors=True)
 
     setup_cfg = configparser.ConfigParser()
+
     setup_cfg['build'] = {
         'plat_name': setup_build_plat,
         'debug': True if mode == 'Debug' else False
     }
-    with (pathlib.Path(__file__) / '..' / 'setup.cfg').open('w') as cfg_file:
-        setup_cfg.write(cfg_file)
+
+    with ('.' / 'setup.cfg').open('w') as cfg_file:
+        setup_cfg.write(cfg_file)  # needed?
 
     if not buil_dir.is_dir():
         print("didn't find CascLib build scaffolding, creating...")
