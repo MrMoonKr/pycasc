@@ -91,7 +91,8 @@ if not sys.argv[1] == 'install':
 
 setup(
     name='casc',
-    version='0.0.1'
+    version='0.0.1',
+    url='https://github.com/Meithal/pycasc',
     py_modules=['casc'],
     ext_modules=extensions,
     verbose=mode == 'Debug',
