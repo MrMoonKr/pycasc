@@ -91,6 +91,7 @@ if not sys.argv[1] == 'install':
 
 setup(
     name='casc',
+    version='0.0.1'
     py_modules=['casc'],
     ext_modules=extensions,
     verbose=mode == 'Debug',
