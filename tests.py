@@ -1,9 +1,18 @@
 import casc
-from distutils.core import run_setup
+#from distutils.core import run_setup
 
+with casc.Casc( "E:\\myGames\\World of Warcraft" ) as c:
+    handler, result = c.find_first_file("*")
+    while True:
+        handler, result = c.find_next_file(handler)
+        if not handler:
+            print("last file")
+            break
+        if result['filename'].endswith(".m2"):
+            print(result)
+        #print( "파일 : " , result['filename'] )
 
-
-with casc.Casc("D:\\Warcraft III:w3") as cf:
+with casc.Casc("E:\\myGames\\Warcraft3") as cf:
     print("test.py, start search handler")
     handler, result = cf.find_first_file("*")
     print("test.py, first file", result)

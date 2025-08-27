@@ -5,14 +5,15 @@ import pathlib
 import shutil
 import configparser
 import platform
+import sysconfig
 
 mode = 'Release'  # Debug/Release
 plat = 32 if platform.architecture()[0] == '32bit' else 64  # 32 or 64
 os.environ['DISTUTILS_DEBUG'] = "1" if mode == 'Debug' else ""
 
 from setuptools import Extension, setup
-from distutils.util import get_platform
-from distutils.ccompiler import new_compiler
+#from distutils.util import get_platform
+#from distutils.ccompiler import new_compiler
 
 extensions = []
 print("setup.py mode", sys.argv[1] if len(sys.argv) > 1 else "none")
@@ -30,7 +31,8 @@ if not sys.argv[1] == 'install':
         32: pathlib.Path('.') / 'CascLib' / bname32,
         64: pathlib.Path('.') / 'CascLib' / bname64}.get(plat)
     cmake_opts = {32: ["-A", "Win32"], 64: ["-A", "x64"]}.get(plat, [])
-    setup_build_plat = {32: 'win32', 64: 'win-amd64'}.get(plat, get_platform())
+    # setup_build_plat = {32: 'win32', 64: 'win-amd64'}.get(plat, get_platform())
+    setup_build_plat = {32: 'win32', 64: 'win-amd64'}.get(plat, sysconfig.get_platform())
     bname = {32: bname32, 64: bname64}.get(plat, bname64)
 
     include_dir = pathlib.Path('.') / 'CascLib' / 'src'
@@ -54,7 +56,7 @@ if not sys.argv[1] == 'install':
         buil_dir.mkdir(exist_ok=True)
         subprocess.run([
             "cmake",
-            "-DCASC_BUILD_SHARED_LIB:BOOL=ON", "-DCASC_BUILD_STATIC_LIB:BOOL=ON", "-DCASC_UNICODE:BOOL=OFF",
+            "-DCASC_BUILD_SHARED_LIB:BOOL=OFF", "-DCASC_BUILD_STATIC_LIB:BOOL=ON", "-DCASC_UNICODE:BOOL=OFF", "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
         ] + cmake_opts + [
             ".."
         ], cwd=buil_dir)
